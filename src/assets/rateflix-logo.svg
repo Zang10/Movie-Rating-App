@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  -------------------------------------------------------------------
+  RateFlix Brand Mark
+  -------------------------------------------------------------------
+  • Simple, scalable SVG (pure vector → crisp at any size)
+  • Dark background (#0f0f0f) with vibrant accent (#e50914) inspired by cinema lights
+  • Combines a stylised film-strip play button + rating star
+  -------------------------------------------------------------------
+-->
+<svg
+  width="160" height="160"
+  viewBox="0 0 160 160"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="rateflixLogoTitle rateflixLogoDesc"
+>
+  <title id="rateflixLogoTitle">RateFlix logo</title>
+  <desc id="rateflixLogoDesc">A stylised film strip shaped as a play button with a star in the middle</desc>
+
+  <!-- Background circle -->
+  <rect width="160" height="160" rx="32" fill="#0f0f0f"/>
+
+  <!-- Film-strip triangle (play button) -->
+  <path
+    d="M55 40L120 80L55 120V40Z"
+    fill="#141414"/>
+  <!-- Perforations -->
+  <g fill="#2d2d2d">
+    <rect x="60" y="46" width="6" height="8"/>
+    <rect x="60" y="66" width="6" height="8"/>
+    <rect x="60" y="86" width="6" height="8"/>
+    <rect x="60" y="106" width="6" height="8"/>
+  </g>
+
+  <!-- Star accent -->
+  <path
+    d="M88 65l4.2 12.3h12.9L94 85.4l4.1 12.3L88 89.6l-10.1 8.1 4.1-12.3-11.1-8.1h12.9L88 65z"
+    fill="#e50914"/>
+
+  <!-- Hidden text for accessibility & SEO -->
+  <text x="-9999" y="-9999">RateFlix</text>
+</svg> 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" aria-labelledby="title desc" role="img">
+  <title id="title">Rate Flix logo</title>
+  <desc id="desc">Rounded square with letters Rf</desc>
+  <rect width="40" height="40" rx="8" fill="#e50914"/>
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="'Arial Black', sans-serif" font-size="20" fill="#ffffff">Rf</text>
+</svg> 
