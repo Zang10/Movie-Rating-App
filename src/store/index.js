@@ -1,6 +1,14 @@
 import { createStore } from 'vuex'
 import { movieService } from '@/services/movieService'
 
+// --- Seed demo user if localStorage is empty ---
+const DEMO_USERS = [
+  { username: 'user', password: 'password', email: 'user@email.com' }
+]
+if (!localStorage.getItem('users')) {
+  localStorage.setItem('users', JSON.stringify(DEMO_USERS))
+}
+
 export default createStore({
   state: {
     movies: [],

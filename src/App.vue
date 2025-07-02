@@ -1,100 +1,17 @@
-<template>
-  <div id="app">
-    <nav class="navbar navbar-expand-lg rateflix-navbar-dark" role="navigation">
-      <div class="container">
-        <router-link class="navbar-brand d-flex align-items-center" to="/">
-          <img src="@/assets/rf-logo.svg" alt="Ratefl!x logo" height="28" class="me-2" />
-          <span class="brand-text">Ratefl!x</span>
-        </router-link>
-        <div class="d-none d-lg-block ms-4" style="width:300px;">
-          <SearchBar @search="onGlobalSearch" @filter="showFilter=true" />
-        </div>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <router-link class="nav-link" to="/">Home</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/movies">Movies</router-link>
-            </li>
-            <li v-if="!isAuthenticated" class="nav-item">
-              <router-link class="nav-link" to="/login">Login</router-link>
-            </li>
-            <li v-else class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="user-avatar me-2">{{ userInitials }}</span>
-                {{ user.username }}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="#" @click.prevent="logout">Logout</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Global filter panel -->
-    <FilterPanel :open="showFilter" @close="showFilter=false" @apply="applyFilter" />
-
-    <router-view/>
-  </div>
-</template>
-
-<script>
-import { mapGetters, mapActions } from 'vuex'
-import SearchBar from '@/components/SearchBar.vue'
-import FilterPanel from '@/components/FilterPanel.vue'
-
-export default {
-  name: 'App',
-  components: { SearchBar, FilterPanel },
-  computed: {
-    ...mapGetters(['isAuthenticated', 'user']),
-    userInitials() {
-      if (!this.user || !this.user.username) return ''
-      return this.user.username.slice(0, 2).toUpperCase()
-    }
-  },
-  data() {
-    return {
-      showFilter: false
-    }
-  },
-  methods: {
-    ...mapActions(['logout']),
-    onGlobalSearch(term){
-      this.$router.push({ path:'/movies', query:{ q: term } })
-    },
-    applyFilter(params){
-      this.showFilter=false
-      const newQuery={ ...this.$route.query, ...params }
-      this.$router.push({ path:'/movies', query:newQuery })
-    }
-  }
-}
-</script>
-
 <style>
 :root {
   --rateflix-dark: #1a1a1a;
   --rateflix-gray: #2d2d2d;
-  --rateflix-primary: #2563eb;    /* Main blue */
-  --rateflix-hover: #1d4ed8;      /* Darker blue for hover */
-  --rateflix-disabled: #93c5fd;   /* Light blue for disabled state */
+  --rateflix-primary: #2563eb;
+  --rateflix-hover: #1d4ed8;
+  --rateflix-disabled: #93c5fd;
   --rateflix-white: #FFFFFF;
 }
-
 body, .app, #app {
   font-family: 'Noto Serif', serif;
   background-color: #0f1626 !important;
   color: var(--rateflix-white) !important;
 }
-
-/* Dark navbar */
 .rateflix-navbar-dark {
   background: #111827 !important;
   border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -102,17 +19,14 @@ body, .app, #app {
   height: 64px;
   padding: 0 2vw;
 }
-
 .rateflix-navbar-dark .navbar-brand,
 .rateflix-navbar-dark .nav-link {
   color: var(--rateflix-white) !important;
 }
-
 .rateflix-navbar-dark .nav-link.router-link-active {
   color: var(--rateflix-primary) !important;
   border-bottom-color: var(--rateflix-primary);
 }
-
 .navbar-brand {
   font-weight: 400;
   font-size: 1.2rem;
@@ -126,7 +40,6 @@ body, .app, #app {
   text-shadow: none !important;
   font-family: inherit;
 }
-
 .nav-link {
   color: var(--rateflix-white) !important;
   font-weight: 400;
@@ -143,18 +56,15 @@ body, .app, #app {
   align-items: center;
   height: 48px;
 }
-
 .nav-link.router-link-active {
   color: var(--rateflix-primary) !important;
   font-weight: 500;
   border-bottom: 2px solid var(--rateflix-primary);
   background: none !important;
 }
-
 .nav-link:hover {
   color: #bbbbbb !important;
 }
-
 .section-title {
   color: var(--rateflix-white);
   font-size: 2.5rem;
@@ -166,7 +76,6 @@ body, .app, #app {
   position: relative;
   padding-bottom: 0.5rem;
 }
-
 .section-title::after {
   content: '';
   position: absolute;
@@ -177,7 +86,6 @@ body, .app, #app {
   background: linear-gradient(90deg, var(--rateflix-primary), #00ff88);
   border-radius: 2px;
 }
-
 .user-avatar {
   display: inline-flex;
   align-items: center;
@@ -193,50 +101,59 @@ body, .app, #app {
   box-shadow: 0 1px 4px rgba(37, 99, 235, 0.2);
 }
 
-/* Strong blue boundary for accent buttons (View Details, Watch Details, Browse All Movies) */
-.rateflix-btn-accent {
-  background: var(--rateflix-primary) !important;
-  color: var(--rateflix-white) !important;
-  border: 2.5px solid #0A84FF !important;
-  border-radius: 0.35rem !important;
-  font-weight: 700;
-  transition: background 0.2s, border-color 0.2s, transform 0.2s;
-  padding: 0.5rem 1.2rem;
-  font-size: 1rem;
-  text-decoration: none;
-  box-shadow: 0 0 0 3px rgba(10,132,255,0.15) !important;
-  outline: none !important;
+/* 1. Hamburger menu icon pure white and visible */
+.navbar-toggler {
+  border-color: #fff !important;
+  box-shadow: 0 0 0 2px #fff2 !important;
+}
+.navbar-toggler:focus, .navbar-toggler[aria-expanded="true"] {
+  border-color: #fff !important;
+  box-shadow: 0 0 0 3px #fff5 !important;
+}
+.navbar-toggler .navbar-toggler-icon,
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
+  background-size: 80% 80% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
 
-.rateflix-btn-accent:hover:not(:disabled) {
-  background: var(--rateflix-hover) !important;
-  border-color: #2563eb !important;
-  transform: translateY(-1px) scale(1.04);
-  text-decoration: none;
-  box-shadow: 0 0 0 4px rgba(37,99,235,0.18) !important;
+/* 2 & 3. Collapsed menu background and readable links on mobile */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background: #111827 !important;
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    padding-bottom: 1rem;
+    border: 2px solid #fff !important;
+  }
+  .navbar-nav .nav-link {
+    color: #fff !important;
+    font-size: 1.2rem;
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    border: 1.5px solid #fff !important;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255,255,255,0.04);
+  }
 }
 
-.rateflix-btn-accent:disabled {
-  background: var(--rateflix-disabled) !important;
-  color: #EFEFEF !important;
-  border-color: #93c5fd !important;
-  opacity: 0.7;
-  box-shadow: none !important;
+/* 2. Hero/summary section min-height and padding for mobile */
+.hero-container {
+  min-height: 220px;
+  padding: 1.5rem 1rem;
 }
-
-.brand-text {
-  font-family: 'Merriweather', serif;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--rateflix-white);
-  text-transform: lowercase;
-  letter-spacing: .5px;
-}
-
-.footer-text {
-  font-size: 1.1rem;
-  font-weight: 500;
-  letter-spacing: 1px;
-  color: var(--rateflix-white);
+@media (max-width: 600px) {
+  .hero-container {
+    min-height: 180px;
+    padding: 1rem 0.5rem;
+  }
+  .hero-container .lead, .hero-container .movie-summary {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
 }
 </style> 

@@ -41,7 +41,7 @@
                     </span>
                   </span>
                   <span v-if="userRating" class="ms-2 rating-value">({{ userRating }}/5)</span>
-                  <span v-else class="ms-2 text-muted">Not rated yet</span>
+                  <span v-else class="ms-2 not-rated-bright">Not rated yet</span>
                 </div>
                 <div v-if="ratingMessage" class="text-success mt-1">{{ ratingMessage }}</div>
               </div>
@@ -120,6 +120,21 @@
                 ></iframe>
               </div>
             </div>
+
+            <!-- Reviews Section -->
+            <div class="modern-reviews-section">
+              <h5 class="modern-section-title"><i class="bi bi-chat-dots me-2"></i>Reviews</h5>
+              <form @submit.prevent="addReview" class="modern-review-form">
+                <input v-model="newReview" class="modern-review-input" placeholder="Write a review..." required />
+                <button type="submit" class="modern-review-btn">Submit</button>
+              </form>
+              <div v-if="reviews.length === 0" class="modern-no-reviews">No reviews yet. Be the first to comment!</div>
+              <ul v-else class="modern-review-list">
+                <li v-for="(review, idx) in reviews" :key="idx" class="modern-review-item">
+                  {{ review }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -140,7 +155,7 @@
               <div class="card-body">
                 <h5 class="card-title">{{ rec.title }}</h5>
                 <p class="card-text">
-                  <small class="text-muted">{{ rec.release_date?.split('-')[0] }}</small>
+                  <small class="rec-year-bright">{{ rec.release_date?.split('-')[0] }}</small>
                 </p>
               </div>
             </div>
@@ -158,6 +173,8 @@
 import { mapState, mapActions, mapGetters } from 'vuex'
 import { getImageUrl } from '@/api/tmdb'
 import HumanVerificationModal from '@/components/HumanVerificationModal.vue'
+import { ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'MovieDetails',
@@ -242,6 +259,36 @@ export default {
       },
       immediate: true
     }
+  },
+  setup() {
+    const route = useRoute();
+    const newReview = ref('');
+    const reviews = ref([]);
+
+    function loadReviews() {
+      const id = route.params.id;
+      if (id) {
+        const stored = localStorage.getItem(`reviews-${id}`);
+        reviews.value = stored ? JSON.parse(stored) : [];
+      }
+    }
+
+    function addReview() {
+      const id = route.params.id;
+      if (!newReview.value.trim()) return;
+      reviews.value.push(newReview.value);
+      localStorage.setItem(`reviews-${id}`, JSON.stringify(reviews.value));
+      newReview.value = '';
+    }
+
+    watch(() => route.params.id, loadReviews, { immediate: true });
+    onMounted(loadReviews);
+
+    return {
+      newReview,
+      reviews,
+      addReview
+    };
   }
 }
 </script>
@@ -476,5 +523,99 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   color: #ffffff;
+}
+
+.not-rated-bright {
+  color: #fffbe6 !important;
+  font-weight: 600;
+  text-shadow: 0 1px 6px #222, 0 0px 2px #fff;
+  letter-spacing: 0.5px;
+}
+
+.rec-year-bright {
+  color: #fffbe6 !important;
+  font-weight: 600;
+  text-shadow: 0 1px 6px #222, 0 0px 2px #fff;
+  letter-spacing: 0.5px;
+}
+
+.modern-reviews-section {
+  background: #f8fafc;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(30,41,59,0.08);
+  padding: 2rem 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.modern-section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+}
+.modern-review-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+.modern-review-input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border-radius: 0.8rem;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  background: #fff;
+  color: #1e293b;
+  outline: none;
+  transition: border 0.2s;
+}
+.modern-review-input:focus {
+  border: 1.5px solid #4facfe;
+}
+.modern-review-btn {
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.8rem;
+  border: none;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(79,172,254,0.08);
+  transition: background 0.2s;
+}
+.modern-review-btn:hover {
+  background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+}
+.modern-no-reviews {
+  color: #64748b;
+  font-size: 1rem;
+  text-align: center;
+  padding: 1.5rem 0 0.5rem 0;
+}
+.modern-review-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.modern-review-item {
+  background: #fff;
+  color: #1e293b;
+  border-radius: 0.9rem;
+  box-shadow: 0 2px 12px rgba(30,41,59,0.07);
+  padding: 1rem 1.2rem;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  word-break: break-word;
+  border: 1px solid #e2e8f0;
 }
 </style> 
