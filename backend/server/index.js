@@ -7,16 +7,16 @@ const scrypt = promisify(crypto.scrypt)
 const sessions = new Map()
 const sessionMaxAge = 7 * 24 * 60 * 60 * 1000
 const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST || '127.0.0.1',
-  port: Number(process.env.MYSQL_PORT || 3306),
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE || 'movie_rating_app',
+  host: process.env.MYSQL_HOST || process.env.MYSQLHOST || '127.0.0.1',
+  port: Number(process.env.MYSQL_PORT || process.env.MYSQLPORT || 3306),
+  user: process.env.MYSQL_USER || process.env.MYSQLUSER || 'root',
+  password: process.env.MYSQL_PASSWORD || process.env.MYSQLPASSWORD,
+  database: process.env.MYSQL_DATABASE || process.env.MYSQLDATABASE || 'movie_rating_app',
   waitForConnections: true,
   connectionLimit: 10,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  ssl: { rejectUnauthorized: false }
 })
-
 function sendJson(res, status, value, headers = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', ...headers })
   res.end(JSON.stringify(value))
@@ -212,9 +212,9 @@ const server = http.createServer((req, res) => {
   })
 })
 
-const port = Number(process.env.API_PORT || 3001)
-server.listen(port, '127.0.0.1', () => {
-  console.log(`Movie app API listening on http://127.0.0.1:${port}`)
+const port = Number(process.env.PORT || process.env.API_PORT || 3001)
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Movie app API listening on port ${port}`)
 })
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
