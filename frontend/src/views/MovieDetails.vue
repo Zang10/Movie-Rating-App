@@ -131,7 +131,7 @@
               <div v-if="reviews.length === 0" class="modern-no-reviews">No reviews yet. Be the first to comment!</div>
               <ul v-else class="modern-review-list">
                 <li v-for="(review, idx) in reviews" :key="idx" class="modern-review-item">
-                  {{ review }}
+                <strong>{{ review.username }}:</strong> {{ review.text }}
                 </li>
               </ul>
             </div>
@@ -173,8 +173,9 @@
 import { mapState, mapActions, mapGetters } from 'vuex'
 import { getImageUrl } from '@/api/tmdb'
 import HumanVerificationModal from '@/components/HumanVerificationModal.vue'
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import backend from '@/api/backend'
 
 export default {
   name: 'MovieDetails',
@@ -254,6 +255,7 @@ export default {
       handler(newId) {
         if (newId) {
           this.fetchMovieDetails(newId)
+        this.$store.dispatch('fetchUserRating', newId).catch(() => {})
           this.scrollToTop()
         }
       },
@@ -265,24 +267,32 @@ export default {
     const newReview = ref('');
     const reviews = ref([]);
 
-    function loadReviews() {
+    async function loadReviews() {
       const id = route.params.id;
       if (id) {
-        const stored = localStorage.getItem(`reviews-${id}`);
-        reviews.value = stored ? JSON.parse(stored) : [];
+        try {
+          const { data } = await backend.get(`/reviews/${encodeURIComponent(id)}`)
+          reviews.value = data.reviews
+        } catch (error) {
+          console.error('Unable to load reviews:', error)
+          reviews.value = []
+        }
       }
     }
 
-    function addReview() {
+    async function addReview() {
       const id = route.params.id;
       if (!newReview.value.trim()) return;
-      reviews.value.push(newReview.value);
-      localStorage.setItem(`reviews-${id}`, JSON.stringify(reviews.value));
-      newReview.value = '';
+      try {
+        await backend.post(`/reviews/${encodeURIComponent(id)}`, { review: newReview.value })
+        newReview.value = ''
+        await loadReviews()
+      } catch (error) {
+        window.alert(error.response?.data?.message || 'Could not save your review.')
+      }
     }
 
     watch(() => route.params.id, loadReviews, { immediate: true });
-    onMounted(loadReviews);
 
     return {
       newReview,

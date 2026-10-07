@@ -50,7 +50,7 @@ export default {
         }
         router.push('/')
       } catch (err) {
-        error.value = err.message || 'An error occurred'
+          error.value = err.response?.data?.message || err.message || 'An error occurred'
       }
     }
 

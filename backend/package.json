@@ -1,0 +1,11 @@
+{
+  "name": "movie-rating-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "api": "node --env-file=.env server/index.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.14.3"
+  }
+}

@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import App from './views/App.vue'
+import App from './App.vue'
 import router from './router'
 import store from './store'
 import 'bootstrap/dist/css/bootstrap.css'
@@ -14,4 +14,4 @@ app.use(store)
 app.use(router)
 // app.use(BootstrapVue3) // Uncomment if using BootstrapVue3
 
-app.mount('#app') 
+store.dispatch('restoreSession').finally(() => app.mount('#app'))
