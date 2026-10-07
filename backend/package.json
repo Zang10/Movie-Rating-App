@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "api": "node --env-file=.env server/index.js"
+    "start": "node server/index.js",
+"api": "node server/index.js"  },
+  "engines": {
+    "node": ">=22"
   },
   "dependencies": {
     "mysql2": "^3.14.3"
