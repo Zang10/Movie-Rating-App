@@ -9,6 +9,7 @@
   "scripts": {
     "serve": "npm run serve --workspace frontend",
     "build": "npm run build --workspace frontend",
-    "api": "npm run api --workspace backend"
+    "api": "npm run api --workspace backend",
+    "start": "npm run start --workspace backend"
   }
 }

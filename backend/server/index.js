@@ -1,3 +1,7 @@
+try {
+  process.loadEnvFile?.()
+} catch {}
+
 const http = require('node:http')
 const crypto = require('node:crypto')
 const { promisify } = require('node:util')
@@ -92,6 +96,36 @@ function validCredentials(username, password) {
     typeof password === 'string' && password.length >= 8 && password.length <= 200
 }
 
+async function getMovieRatingSummary(movieId, userId = null) {
+  const [summaryRows] = await pool.execute(
+    'SELECT COUNT(*) AS rating_count, AVG(rating) AS average_rating FROM ratings WHERE tmdb_movie_id = ?',
+    [movieId]
+  )
+  const count = Number(summaryRows[0]?.rating_count || 0)
+  const avg = count > 0 && summaryRows[0]?.average_rating !== null
+    ? Number(parseFloat(summaryRows[0].average_rating).toFixed(1))
+    : null
+
+  let userRating = null
+  if (userId) {
+    const [userRows] = await pool.execute(
+      'SELECT rating FROM ratings WHERE user_id = ? AND tmdb_movie_id = ?',
+      [userId, movieId]
+    )
+    userRating = userRows[0]?.rating ?? null
+  }
+
+  return {
+    rating: userRating,
+    userRating,
+    currentUserRating: userRating,
+    averageRating: avg,
+    average_rating: avg,
+    ratingCount: count,
+    rating_count: count
+  }
+}
+
 async function handle(req, res) {
   const url = new URL(req.url, 'http://localhost')
   const path = url.pathname
@@ -154,15 +188,14 @@ async function handle(req, res) {
   const ratingMatch = path.match(/^\/api\/ratings\/(\d+)$/)
   if (ratingMatch && (req.method === 'GET' || req.method === 'PUT')) {
     const session = getSession(req)
-    if (!session) throw Object.assign(new Error('Log in to manage movie ratings.'), { status: 401 })
     const movieId = BigInt(ratingMatch[1]).toString()
+
     if (req.method === 'GET') {
-      const [rows] = await pool.execute(
-        'SELECT rating FROM ratings WHERE user_id = ? AND tmdb_movie_id = ?',
-        [session.userId, movieId]
-      )
-      return sendJson(res, 200, { rating: rows[0]?.rating ?? null })
+      const summary = await getMovieRatingSummary(movieId, session?.userId)
+      return sendJson(res, 200, summary)
     }
+
+    if (!session) throw Object.assign(new Error('Log in to manage movie ratings.'), { status: 401 })
     const { rating } = await readJson(req)
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
       throw Object.assign(new Error('Rating must be a whole number from 1 to 5.'), { status: 400 })
@@ -172,7 +205,8 @@ async function handle(req, res) {
        ON DUPLICATE KEY UPDATE rating = VALUES(rating)`,
       [session.userId, movieId, rating]
     )
-    return sendJson(res, 200, { rating })
+    const summary = await getMovieRatingSummary(movieId, session.userId)
+    return sendJson(res, 200, summary)
   }
 
   const reviewsMatch = path.match(/^\/api\/reviews\/(\d+)$/)

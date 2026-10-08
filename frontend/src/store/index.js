@@ -13,6 +13,7 @@ export default createStore({
     searchQuery: '',
     user: null,
     ratings: {},
+    ratingSummaries: {},
     humanVerified: false
   },
   mutations: {
@@ -28,6 +29,15 @@ export default createStore({
     SET_RATING(state, { movieId, rating }) {
       if (rating === null) delete state.ratings[movieId]
       else state.ratings[movieId] = rating
+    },
+    SET_RATING_SUMMARY(state, { movieId, averageRating, ratingCount }) {
+      state.ratingSummaries = {
+        ...state.ratingSummaries,
+        [movieId]: {
+          averageRating: averageRating ?? null,
+          ratingCount: Number(ratingCount) || 0
+        }
+      }
     },
     SET_HUMAN_VERIFIED(state, value) { state.humanVerified = value }
   },
@@ -103,15 +113,34 @@ export default createStore({
         commit('SET_HUMAN_VERIFIED', false)
       }
     },
-    async fetchUserRating({ commit, state }, movieId) {
-      if (!state.user) return
-      const { data } = await backend.get(`/ratings/${encodeURIComponent(movieId)}`)
-      commit('SET_RATING', { movieId, rating: data.rating })
+    async fetchRatingSummary({ commit }, movieId) {
+      try {
+        const { data } = await backend.get(`/ratings/${encodeURIComponent(movieId)}`)
+        commit('SET_RATING', { movieId, rating: data.rating ?? data.userRating ?? null })
+        commit('SET_RATING_SUMMARY', {
+          movieId,
+          averageRating: data.averageRating ?? null,
+          ratingCount: data.ratingCount ?? 0
+        })
+        return data
+      } catch (error) {
+        console.error('Error in fetchRatingSummary:', error)
+        return null
+      }
+    },
+    async fetchUserRating({ dispatch }, movieId) {
+      return dispatch('fetchRatingSummary', movieId)
     },
     async setRating({ commit, state }, { movieId, rating }) {
       if (!state.user) throw new Error('You must be logged in to rate movies.')
       const { data } = await backend.put(`/ratings/${encodeURIComponent(movieId)}`, { rating })
-      commit('SET_RATING', { movieId, rating: data.rating })
+      commit('SET_RATING', { movieId, rating: data.rating ?? data.userRating ?? rating })
+      commit('SET_RATING_SUMMARY', {
+        movieId,
+        averageRating: data.averageRating ?? null,
+        ratingCount: data.ratingCount ?? 0
+      })
+      return data
     }
   },
   getters: {
@@ -124,6 +153,7 @@ export default createStore({
     searchQuery: state => state.searchQuery,
     user: state => state.user,
     isAuthenticated: state => !!state.user,
-    getUserRating: state => movieId => state.ratings[movieId] || null
+    getUserRating: state => movieId => state.ratings[movieId] || null,
+    getRatingSummary: state => movieId => state.ratingSummaries[movieId] || { averageRating: null, ratingCount: 0 }
   }
 })

@@ -15,10 +15,10 @@
           <i class="bi bi-play-fill me-1"></i> Watch details
         </router-link>
       </div>
-      <!-- arrows -->
-      <button class="arrow left" @click="prevSlide"><span class="arrow-symbol">&#8249;</span></button>
-      <button class="arrow right" @click="nextSlide"><span class="arrow-symbol">&#8250;</span></button>
     </div>
+    <!-- arrows -->
+    <button class="arrow left" @click="prevSlide" aria-label="Previous slide"><span class="arrow-symbol">&#8249;</span></button>
+    <button class="arrow right" @click="nextSlide" aria-label="Next slide"><span class="arrow-symbol">&#8250;</span></button>
   </div>
 </template>
 
@@ -85,10 +85,16 @@ export default {
   background-size: cover;
   background-position: center;
   opacity: 0;
-  transition: opacity 0.7s ease;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+  z-index: 1;
 }
 .slide.active {
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
 }
 .overlay {
   position: absolute;
@@ -127,6 +133,7 @@ export default {
   cursor: pointer;
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  z-index: 10;
 }
 .arrow.left { left: 1.25rem; }
 .arrow.right { right: 1.25rem; }

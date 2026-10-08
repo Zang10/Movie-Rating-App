@@ -29,24 +29,44 @@
             </div>
           </div>
           <div class="col-md-8">
-            <!-- User Rating Section -->
+            <!-- User & Community Rating Section -->
             <div class="rating-section glass-card mb-4">
-              <div v-if="isAuthenticated">
-                <h5 class="section-title"><i class="bi bi-star me-2 text-warning"></i>Your Rating</h5>
-                <div class="d-flex align-items-center gap-2">
-                  <span v-for="star in 5" :key="star" @click="rateMovie(star)" class="star-rating">
-                    <i v-if="hasBootstrapIcons" :class="userRating >= star ? 'bi bi-star-fill text-warning' : 'bi bi-star text-secondary'"></i>
-                    <span v-else :style="userRating >= star ? 'color: #ffc107;' : 'color: #adb5bd;'">
-                      {{ userRating >= star ? '★' : '☆' }}
-                    </span>
+              <!-- Rating Summary -->
+              <div class="rating-summary mb-3">
+                <h5 class="section-title mb-2">
+                  <i v-if="hasBootstrapIcons" class="bi bi-star-half me-2 text-warning"></i>Rating Summary
+                </h5>
+                <div class="rating-summary-text">
+                  <span v-if="ratingSummary && ratingSummary.ratingCount > 0">
+                    ⭐ {{ formattedAverageRating }}/5 · {{ ratingSummary.ratingCount }} {{ ratingSummary.ratingCount === 1 ? 'rating' : 'ratings' }}
                   </span>
-                  <span v-if="userRating" class="ms-2 rating-value">({{ userRating }}/5)</span>
-                  <span v-else class="ms-2 not-rated-bright">Not rated yet</span>
+                  <span v-else>
+                    ⭐ No ratings yet
+                  </span>
                 </div>
-                <div v-if="ratingMessage" class="text-success mt-1">{{ ratingMessage }}</div>
               </div>
-              <div v-else>
-                <div class="login-alert">Please <router-link to="/login">log in</router-link> to rate this movie.</div>
+
+              <hr class="rating-divider my-3" />
+
+              <!-- User Rating Section -->
+              <div class="user-rating-section">
+                <div v-if="isAuthenticated">
+                  <h5 class="section-title mb-2"><i v-if="hasBootstrapIcons" class="bi bi-star me-2 text-warning"></i>Your Rating</h5>
+                  <div class="d-flex align-items-center gap-2">
+                    <span v-for="star in 5" :key="star" @click="rateMovie(star)" class="star-rating">
+                      <i v-if="hasBootstrapIcons" :class="userRating >= star ? 'bi bi-star-fill text-warning' : 'bi bi-star text-secondary'"></i>
+                      <span v-else :style="userRating >= star ? 'color: #ffc107;' : 'color: #adb5bd;'">
+                        {{ userRating >= star ? '★' : '☆' }}
+                      </span>
+                    </span>
+                    <span v-if="userRating" class="ms-2 rating-value">({{ userRating }}/5)</span>
+                    <span v-else class="ms-2 not-rated-bright">Not rated yet</span>
+                  </div>
+                  <div v-if="ratingMessage" class="text-success mt-1">{{ ratingMessage }}</div>
+                </div>
+                <div v-else>
+                  <div class="login-alert">Please <router-link to="/login">log in</router-link> to rate this movie.</div>
+                </div>
               </div>
             </div>
 
@@ -186,9 +206,18 @@ export default {
       loading: state => state.loading,
       error: state => state.error
     }),
-    ...mapGetters(['isAuthenticated', 'getUserRating']),
+    ...mapGetters(['isAuthenticated', 'getUserRating', 'getRatingSummary']),
     userRating() {
       return this.getUserRating(this.movie?.id)
+    },
+    ratingSummary() {
+      return this.getRatingSummary(this.movie?.id)
+    },
+    formattedAverageRating() {
+      const avg = this.ratingSummary?.averageRating
+      if (avg === null || avg === undefined) return null
+      const num = Number(avg)
+      return isNaN(num) ? null : num.toFixed(1)
     }
   },
   data() {
@@ -200,7 +229,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['fetchMovieDetails', 'setRating']),
+    ...mapActions(['fetchMovieDetails', 'setRating', 'fetchRatingSummary']),
     viewMovieDetails(movieId) {
       this.$router.push(`/movie/${movieId}`)
       this.scrollToTop()
@@ -255,11 +284,16 @@ export default {
       handler(newId) {
         if (newId) {
           this.fetchMovieDetails(newId)
-        this.$store.dispatch('fetchUserRating', newId).catch(() => {})
+          this.fetchRatingSummary(newId).catch(() => {})
           this.scrollToTop()
         }
       },
       immediate: true
+    },
+    isAuthenticated(val) {
+      if (val && this.movie?.id) {
+        this.fetchRatingSummary(this.movie.id).catch(() => {})
+      }
     }
   },
   setup() {
@@ -418,6 +452,19 @@ export default {
 .rating-value {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+}
+
+.rating-summary-text {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.rating-divider {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 1;
 }
 
 .login-alert {
